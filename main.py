@@ -80,10 +80,17 @@ def main(argv: list[str]) -> int:
     out_path = Path(argv[1]) if len(argv) > 1 else DEFAULT_OUTPUT
     review = compose_review()
     problems = check_gate(review)
+    # The gate scores the file itself, so the trailing newline counts too:
+    # the bytes actually written must stay inside the 1-200 character gate.
+    file_text = review + "\n"
+    if len(file_text) > MAX_CHARS:
+        problems.append(
+            f"file content is {len(file_text)} chars, over the {MAX_CHARS} limit"
+        )
     if problems:
         raise ValueError("; ".join(problems))
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(review + "\n", encoding="utf-8")
+    out_path.write_text(file_text, encoding="utf-8")
     return 0
 
 
